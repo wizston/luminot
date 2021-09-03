@@ -16,3 +16,11 @@
 $router->get('/', function () use ($router) {
     return $router->app->version();
 });
+
+
+$router->post('subscribe/{topic}',      'PublisherController@subscribe');
+$router->post('publish/{topic}',        'PublisherController@publish');
+
+$router->post('/{any:.*}', function ($any) {
+    return json_encode(["message" => 'Broadcast received']);
+});
