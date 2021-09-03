@@ -47,25 +47,25 @@ class PublisherService
      *
      * @return Mixed
      */
-    public function publish(string $topic, $payload)
+    public function publish(string $topicParam, $payload)
     {
         try {
-            $topic = Topic::where('name', $topic)->with('subscribers')->first();
+            $topic = Topic::where('name', $topicParam)->with('subscribers')->first();
 
             if (! $topic) {
                 return [
                     "status" => false,
-                    "msg" => "The topic $topic does not exist!",
+                    "msg" => "The topic $topicParam does not exist!",
                     "code" => 404
                 ];
             }
 
             $subscribers = $topic->subscribers()->pluck('url');
 
-            $responses = Http::pool(function (Pool $pool) use ($subscribers, $topic, $payload) {
+            $responses = Http::pool(function (Pool $pool) use ($subscribers, $topicParam, $payload) {
                 $arrayPools = [];
                 foreach ($subscribers as $subscriber) {
-                    $arrayPools[] = $pool->post($subscriber, [ 'form_params' => [ 'topic' => $topic, 'data' => (object) $payload ] ]);
+                    $arrayPools[] = $pool->post($subscriber, [ 'form_params' => [ 'topic' => $topicParam, 'data' => (object) $payload ] ]);
                 }
                 return [ $arrayPools ];
             });
