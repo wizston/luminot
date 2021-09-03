@@ -1,24 +1,103 @@
-# Lumen PHP Framework
+# Luminot (A simple HTTP notification system)
 
-[![Build Status](https://travis-ci.org/laravel/lumen-framework.svg)](https://travis-ci.org/laravel/lumen-framework)
-[![Total Downloads](https://img.shields.io/packagist/dt/laravel/framework)](https://packagist.org/packages/laravel/lumen-framework)
-[![Latest Stable Version](https://img.shields.io/packagist/v/laravel/framework)](https://packagist.org/packages/laravel/lumen-framework)
-[![License](https://img.shields.io/packagist/l/laravel/framework)](https://packagist.org/packages/laravel/lumen-framework)
+A server (or set of servers) will keep track of topics -> subscribers where a topic is a string and a subscriber is an HTTP endpoint. When a message is published on a topic, it should be forwarded to all subscriber endpoints.
 
-Laravel Lumen is a stunningly fast PHP micro-framework for building web applications with expressive, elegant syntax. We believe development must be an enjoyable, creative experience to be truly fulfilling. Lumen attempts to take the pain out of development by easing common tasks used in the majority of web projects, such as routing, database abstraction, queueing, and caching.
+## Installation
 
-## Official Documentation
+Please check the official laravel installation guide for server requirements before you start. [Official Documentation](https://laravel.com/docs/5.4/installation#installation)
 
-Documentation for the framework can be found on the [Lumen website](https://lumen.laravel.com/docs).
+Alternative installation is possible without local dependencies relying on [Docker](#docker).
 
-## Contributing
+Fork this repository, then clone your fork, and run this in your newly created directory:
 
-Thank you for considering contributing to Lumen! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+``` bash
+composer install
+```
 
-## Security Vulnerabilities
+Next you need to make a copy of the `.env.example` file and rename it to `.env` inside your project root.
 
-If you discover a security vulnerability within Lumen, please send an e-mail to Taylor Otwell at taylor@laravel.com. All security vulnerabilities will be promptly addressed.
+Generate a new application key
+
+    php artisan key:generate
+Run the database migrations (**Set the database connection in .env before migrating**)
+
+    php artisan migrate
+
+Start the local development server
+
+    php artisan serve
+
+You can now access the server at http://localhost:8000
+
+## Docker
+
+To install with [Docker](https://www.docker.com), run following commands:
+
+```
+git clone git@github.com:gothinkster/laravel-realworld-example-app.git
+cd laravel-realworld-example-app
+cp .env.example.docker .env
+docker run -v $(pwd):/app composer install
+cd ./docker
+docker-compose up -d
+docker-compose exec php php artisan key:generate
+docker-compose exec php php artisan migrate
+docker-compose exec php php artisan serve --host=0.0.0.0
+```
+
+The api can be accessed at [http://localhost:8000/api](http://localhost:8000/api).
+
+## Api Documentation
+
+###Create a subscription
+`POST: /subscribe/{topic}`
+
+**Body**
+````
+{
+    url: string
+}
+````
+**Success Response**
+
+````
+{
+    url: string, 
+    topic: string
+}
+````
+**Example Request / Response**
+
+````
+POST /subscribe/topic1 
+// body
+{
+    url: "http://localhost:8000.test" 
+}
+````
+**Response:**
+
+````
+{
+    url: "http://localhost:8000", 
+    topic: "topic1"
+}
+````
+
+###Publish message to topic
+`POST /publish/{topic}`
+
+POSTing to this endpoint sends HTTP requests to any current subscribers for the specified {topic} . If there are multiple subscribers they all get notified.
+
+**Expected Body**
+````
+{
+    [key: string]: any
+}
+````
 
 ## License
 
-The Lumen framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This is a Take-home assignment by Pangaea. You should not use this project if you have similar task from the same company.
+
+If the above is not the case with you then, this is an open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
